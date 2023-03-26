@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "kmp.h"
+#include <chrono>
 
 #define True 1
 
@@ -36,6 +36,10 @@ int main(int argc, char * argv[]){
     char adress_2[256];
     snprintf(adress_2, sizeof(adress_2), "tcp://*:%d", 4040 + CUR_NODE);
     zmq_bind (publisher, adress_2);
+    
+    auto begin = std::chrono::steady_clock::now();
+    auto end = std::chrono::steady_clock::now();
+    auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
 
     for(;;){
         zmq_msg_t reply;
@@ -43,7 +47,7 @@ int main(int argc, char * argv[]){
 
         zmq_msg_recv (&reply, subscriber, 0);  
 
-        data_for_node* data = malloc(zmq_msg_size(&reply));
+        data_for_node* data = (data_for_node*) malloc(zmq_msg_size(&reply));
         memcpy(data, zmq_msg_data(&reply), zmq_msg_size(&reply));
 
         //printf("node %d: str: %s, sub: %s, command: %d, node: %d\n", CUR_NODE, data->str, data->sub, data->command, data->node);
@@ -61,12 +65,30 @@ int main(int argc, char * argv[]){
 
             sleep(10);
 
-	        printf("Ok:%d:%d\n", CUR_NODE, KMP(data->str, data->sub));
+            if (!strcmp(data->str, "start"))
+            {
+                auto begin = std::chrono::steady_clock::now();
+                printf("Ok:%d\n", CUR_NODE);
+            }
+            else if (!strcmp(data->str, "stop"))
+            {
+                auto end = std::chrono::steady_clock::now();
+                printf("Ok:%d\n", CUR_NODE);
+            }
+            else if (!strcmp(data->str, "time"))
+            {
+                auto end = std::chrono::steady_clock::now();
+                auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+                printf("Ok:%d: %ld\n", CUR_NODE, elapsed_ms.count());
+            }
+
+
+	        //printf("Ok:%d:%d\n", CUR_NODE, KMP(data->str));
 
         }
         else if (data->command == 2){
-
-            printf("Ok:%d\n", CUR_NODE);
+            if (CUR_NODE == data->node)
+                printf("Ok:%d\n", CUR_NODE);
 
             zmq_msg_send(&reply, publisher, 0);
             zmq_msg_close(&reply);
@@ -81,7 +103,7 @@ int main(int argc, char * argv[]){
                 zmq_msg_close(&reply);
                 free(data);
                 
-                data_for_node* data2 = malloc(sizeof(data_for_node));
+                data_for_node* data2 = (data_for_node*)malloc(sizeof(data_for_node));
                 data2->command = 3;
                 data2->node = -1;
 
