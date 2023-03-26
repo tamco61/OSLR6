@@ -38,22 +38,6 @@ int number_in_array (int number, int * array, int array_size){
     return 0;
 }
 
-void print_array_of_nodes (int * array, int array_size){ // для отладки, вывод всех рабочих нод
-    for(int i = 0; i < array_size; i++){
-        if (array[i] != 0){
-            printf("%d ", array[i]);
-        }          
-    }
-    printf("\n");
-}
-
-void print_relations (int array[2][256], int array_size){ // для отладки, вывод всех связей между нодами
-    for(int i = 0; i < array_size; i++){
-        if (array[0][i] != 0 && array[1][i] != 0){
-            printf("%d - %d\n", array[0][i], array[1][i]);
-        }          
-    }
-}
 
 int main(){
 
@@ -97,13 +81,10 @@ int main(){
             }
 
             char str[256];
-            char sub[256];
-            data_for_node* data = malloc(sizeof(data_for_node));
+            data_for_node* data = (data_for_node*)malloc(sizeof(data_for_node));
 
             scanf("%s", str);
-            scanf("%s", sub);
             strcpy(data->str, str);
-            strcpy(data->sub, sub);
             data->command = 1;
             data->node = node_number;
 
@@ -180,11 +161,11 @@ int main(){
             is_exist = number_in_array(node_number, array_of_nodes, 256);
             if (!is_exist)
             {
-                printf("Error: Not found");
+                printf("Error: Not found\n");
                 continue;
             }
 
-            data_for_node* data = malloc(sizeof(data_for_node));
+            data_for_node* data = (data_for_node*)malloc(sizeof(data_for_node));
             data->command = 2;
             data->node = node_number;
 
@@ -211,7 +192,7 @@ int main(){
                 continue;
             }
 
-            data_for_node* data = malloc(sizeof(data_for_node));
+            data_for_node* data = (data_for_node*)malloc(sizeof(data_for_node));
             data->command = 3;
             data->node = node_number;
 
